@@ -2,12 +2,12 @@
 -- PostgreSQL database dump
 --
 
-\restrict Ut5vuLdfCWEaZ8vxqykaWyp6vqqHfqqiAcTJUWkFuztnlknDAI0qQAOoIXrhHUX
+\restrict qfKwckmL8TxmPzdrLACLivGsMUZcdP54gbIQQGUjnrpqnES8LHd7jUfTFeCXpVY
 
 -- Dumped from database version 18.1 (Ubuntu 18.1-1.pgdg24.04+2)
 -- Dumped by pg_dump version 18.1 (Ubuntu 18.1-1.pgdg24.04+2)
 
--- Started on 2026-02-07 23:43:20 IST
+-- Started on 2026-02-08 00:08:16 IST
 
 SET statement_timeout = 0;
 SET lock_timeout = 0;
@@ -1136,13 +1136,15 @@ COPY public.quotation_templates (template_id, name, validity_days, plan_id, crea
 --
 
 COPY public.recurring_plans (plan_id, name, price, billing_period, min_quantity, is_closable, is_pausable, is_renewable, created_by, created_at, updated_at, auto_close_after_days) FROM stdin;
-1	Basic Monthly	\N	MONTHLY	1	t	f	t	4	2026-02-07 13:44:46.407566+05:30	2026-02-07 23:04:16.423944+05:30	\N
 2	Basic Annual	\N	YEARLY	1	t	f	t	4	2026-02-07 13:44:46.407566+05:30	2026-02-07 23:04:16.423944+05:30	\N
 3	Pro Monthly	\N	MONTHLY	1	t	t	t	4	2026-02-07 13:44:46.407566+05:30	2026-02-07 23:04:16.423944+05:30	\N
 4	Pro Annual	\N	YEARLY	1	t	t	t	4	2026-02-07 13:44:46.407566+05:30	2026-02-07 23:04:16.423944+05:30	\N
 5	Enterprise Monthly	\N	MONTHLY	1	f	f	t	4	2026-02-07 13:44:46.407566+05:30	2026-02-07 23:04:16.423944+05:30	\N
 6	Support Add-on	\N	MONTHLY	1	t	t	t	4	2026-02-07 13:44:46.407566+05:30	2026-02-07 23:04:16.423944+05:30	\N
 9	Trial	\N	MONTHLY	1	f	f	f	4	2026-02-07 23:41:11.876154+05:30	2026-02-07 23:41:11.876154+05:30	7
+10	Trial	\N	MONTHLY	1	f	f	f	4	2026-02-07 23:46:47.695405+05:30	2026-02-07 23:46:47.695405+05:30	7
+11	Trial	\N	MONTHLY	1	f	f	f	4	2026-02-07 23:53:24.688816+05:30	2026-02-07 23:53:24.688816+05:30	7
+1	Trial	\N	MONTHLY	1	f	f	f	4	2026-02-07 13:44:46.407566+05:30	2026-02-08 00:06:49.454905+05:30	7
 \.
 
 
@@ -1166,7 +1168,7 @@ COPY public.roles (role_id, name, created_at) FROM stdin;
 --
 
 COPY public.sessions (sid, sess, expire) FROM stdin;
-ZG9SxWebYBa7vIDU_7iFUi7uJLlYIVG_	{"cookie":{"originalMaxAge":14400000,"expires":"2026-02-07T19:56:34.119Z","secure":false,"httpOnly":true,"path":"/","sameSite":"lax"},"user":{"user_id":4,"email":"aryan26zzz@gmail.com","fname":"Aryan","lname":"Shrivastav","role":"super_admin"}}	2026-02-08 03:41:12
+ZG9SxWebYBa7vIDU_7iFUi7uJLlYIVG_	{"cookie":{"originalMaxAge":14400000,"expires":"2026-02-07T19:56:34.119Z","secure":false,"httpOnly":true,"path":"/","sameSite":"lax"},"user":{"user_id":4,"email":"aryan26zzz@gmail.com","fname":"Aryan","lname":"Shrivastav","role":"super_admin"}}	2026-02-08 04:06:50
 \.
 
 
@@ -1374,7 +1376,7 @@ SELECT pg_catalog.setval('public.quotation_templates_template_id_seq', 3, true);
 -- Name: recurring_plans_plan_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.recurring_plans_plan_id_seq', 9, true);
+SELECT pg_catalog.setval('public.recurring_plans_plan_id_seq', 11, true);
 
 
 --
@@ -2146,11 +2148,11 @@ ALTER TABLE ONLY public.product_variants
     ADD CONSTRAINT fk_variants_product FOREIGN KEY (product_id) REFERENCES public.products(product_id) ON DELETE CASCADE;
 
 
--- Completed on 2026-02-07 23:43:20 IST
+-- Completed on 2026-02-08 00:08:16 IST
 
 --
 -- PostgreSQL database dump complete
 --
 
-\unrestrict Ut5vuLdfCWEaZ8vxqykaWyp6vqqHfqqiAcTJUWkFuztnlknDAI0qQAOoIXrhHUX
+\unrestrict qfKwckmL8TxmPzdrLACLivGsMUZcdP54gbIQQGUjnrpqnES8LHd7jUfTFeCXpVY
 
