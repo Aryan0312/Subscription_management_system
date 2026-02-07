@@ -14,6 +14,9 @@ import { authRouter } from "./routes/authRoutes.js";
 import productRouter from "./routes/productRoutes.js";
 import recurringPlanRouter from "./routes/recurringPlan.js";
 import productPlanPricesRouter from "./routes/productPlanPrices.js";
+import attributeRouter from "./routes/attributeRoutes.js";
+import taxRouter from "./routes/taxRoutes.js";
+import discountRouter from "./routes/discountRoutes.js";
 
 const app = express();
 
@@ -66,6 +69,9 @@ app.use("/api/auth",authRouter);
 app.use("/api/product",productRouter);
 app.use("/api/recurringPlan",recurringPlanRouter);
 app.use("/api/productPlanPrices",productPlanPricesRouter);
+app.use("/api/attributes",attributeRouter);
+app.use("/api/taxes",taxRouter);
+app.use("/api/discounts",discountRouter);
 app.use(errorMiddleware);
 
 app.listen(PORT, () => {

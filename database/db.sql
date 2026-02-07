@@ -2,12 +2,12 @@
 -- PostgreSQL database dump
 --
 
-\restrict qfKwckmL8TxmPzdrLACLivGsMUZcdP54gbIQQGUjnrpqnES8LHd7jUfTFeCXpVY
+\restrict mTCqr0j2pUCOcOy5xruxppceYkAXShamuv4AoMwSIRxYMp5IfK2Z2UuGcCjwA7W
 
 -- Dumped from database version 18.1 (Ubuntu 18.1-1.pgdg24.04+2)
 -- Dumped by pg_dump version 18.1 (Ubuntu 18.1-1.pgdg24.04+2)
 
--- Started on 2026-02-08 00:08:16 IST
+-- Started on 2026-02-08 02:14:42 IST
 
 SET statement_timeout = 0;
 SET lock_timeout = 0;
@@ -1068,6 +1068,7 @@ COPY public.product_plan_prices (product_plan_price_id, product_id, plan_id, pri
 3	2	3	99.99	1	2024-01-01	\N	2026-02-07 23:04:16.423944
 4	2	4	999.90	1	2024-01-01	\N	2026-02-07 23:04:16.423944
 5	6	1	49.99	1	2024-01-01	\N	2026-02-07 23:04:16.423944
+6	1	1	29.99	1	2024-01-01	\N	2026-02-08 00:28:10.807898
 \.
 
 
@@ -1168,7 +1169,8 @@ COPY public.roles (role_id, name, created_at) FROM stdin;
 --
 
 COPY public.sessions (sid, sess, expire) FROM stdin;
-ZG9SxWebYBa7vIDU_7iFUi7uJLlYIVG_	{"cookie":{"originalMaxAge":14400000,"expires":"2026-02-07T19:56:34.119Z","secure":false,"httpOnly":true,"path":"/","sameSite":"lax"},"user":{"user_id":4,"email":"aryan26zzz@gmail.com","fname":"Aryan","lname":"Shrivastav","role":"super_admin"}}	2026-02-08 04:06:50
+ZG9SxWebYBa7vIDU_7iFUi7uJLlYIVG_	{"cookie":{"originalMaxAge":14400000,"expires":"2026-02-07T19:56:34.119Z","secure":false,"httpOnly":true,"path":"/","sameSite":"lax"},"user":{"user_id":4,"email":"aryan26zzz@gmail.com","fname":"Aryan","lname":"Shrivastav","role":"super_admin"}}	2026-02-08 05:08:00
+JB5fyszLEi2ZsC11vn3n6Ccf0suDodjH	{"cookie":{"originalMaxAge":14400000,"expires":"2026-02-08T00:07:10.516Z","secure":false,"httpOnly":true,"path":"/","sameSite":"lax"},"user":{"user_id":4,"email":"aryan26zzz@gmail.com","fname":"Aryan","lname":"Shrivastav","role":"super_admin"}}	2026-02-08 05:37:25
 \.
 
 
@@ -1231,7 +1233,7 @@ COPY public.user_credentials (user_credentials_id, user_id, password, is_locked,
 34	34	$2b$12$UKJJaALT4a0EG/IRbothQO59bAo7XdLEWSzzge.z/l3Pu5HtUA9te	f	0	\N	2026-02-07 13:44:30.497602+05:30
 38	38	$2b$12$NDUDF4pNWB.hitex4I9Axu4HROeOoWH0NmPbeVIO4mbDACi.AdoYS	f	0	2026-02-07 15:03:09.108275+05:30	2026-02-07 14:15:55.942491+05:30
 40	40	$2b$12$cToSYxsggjFCiqEH1mOjQeQPYK0a4MXGs6KdoMWOm9zI6wc/l3g4u	f	0	\N	2026-02-07 15:16:05.653428+05:30
-4	4	$2b$12$UKJJaALT4a0EG/IRbothQO59bAo7XdLEWSzzge.z/l3Pu5HtUA9te	f	0	2026-02-07 21:30:27.571439+05:30	2026-02-05 00:57:11.054677+05:30
+4	4	$2b$12$UKJJaALT4a0EG/IRbothQO59bAo7XdLEWSzzge.z/l3Pu5HtUA9te	f	0	2026-02-08 01:37:10.308178+05:30	2026-02-05 00:57:11.054677+05:30
 \.
 
 
@@ -1331,7 +1333,7 @@ SELECT pg_catalog.setval('public.payments_payment_id_seq', 4, true);
 -- Name: product_plan_prices_product_plan_price_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.product_plan_prices_product_plan_price_id_seq', 5, true);
+SELECT pg_catalog.setval('public.product_plan_prices_product_plan_price_id_seq', 6, true);
 
 
 --
@@ -2148,11 +2150,11 @@ ALTER TABLE ONLY public.product_variants
     ADD CONSTRAINT fk_variants_product FOREIGN KEY (product_id) REFERENCES public.products(product_id) ON DELETE CASCADE;
 
 
--- Completed on 2026-02-08 00:08:16 IST
+-- Completed on 2026-02-08 02:14:42 IST
 
 --
 -- PostgreSQL database dump complete
 --
 
-\unrestrict qfKwckmL8TxmPzdrLACLivGsMUZcdP54gbIQQGUjnrpqnES8LHd7jUfTFeCXpVY
+\unrestrict mTCqr0j2pUCOcOy5xruxppceYkAXShamuv4AoMwSIRxYMp5IfK2Z2UuGcCjwA7W
 
