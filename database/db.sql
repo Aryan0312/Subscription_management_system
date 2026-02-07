@@ -2,12 +2,12 @@
 -- PostgreSQL database dump
 --
 
-\restrict a2GJPYN5yulbrjfl6n4jjfj6LGY0WEcydAUF6Gr1gWyPrkEr3RkBUkrleXyvZhf
+\restrict uz3yarfWcZWLDlO8RrrWjdHrOM1eOqtdZd9UtzjakZWozTB0gFvWBMcbvlfMdNs
 
 -- Dumped from database version 18.1 (Ubuntu 18.1-1.pgdg24.04+2)
 -- Dumped by pg_dump version 18.1 (Ubuntu 18.1-1.pgdg24.04+2)
 
--- Started on 2026-02-07 18:47:55 IST
+-- Started on 2026-02-07 20:49:32 IST
 
 SET statement_timeout = 0;
 SET lock_timeout = 0;
@@ -2000,11 +2000,11 @@ ALTER TABLE ONLY public.product_variants
     ADD CONSTRAINT fk_variants_product FOREIGN KEY (product_id) REFERENCES public.products(product_id) ON DELETE CASCADE;
 
 
--- Completed on 2026-02-07 18:47:55 IST
+-- Completed on 2026-02-07 20:49:32 IST
 
 --
 -- PostgreSQL database dump complete
 --
 
-\unrestrict a2GJPYN5yulbrjfl6n4jjfj6LGY0WEcydAUF6Gr1gWyPrkEr3RkBUkrleXyvZhf
+\unrestrict uz3yarfWcZWLDlO8RrrWjdHrOM1eOqtdZd9UtzjakZWozTB0gFvWBMcbvlfMdNs
 
