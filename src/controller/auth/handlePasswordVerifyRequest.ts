@@ -8,12 +8,17 @@ import { sendMailAsync } from "../../utils/sendMailAsync.js";
 
 export const handlePasswordResetVerifyOtp = asyncHandler(
   async (req: Request, res: Response) => {
+
+    if(!req.body || !req.body.email || !req.body.otp){
+        throw new ApiError(400, "Email and OTP are required");
+    }
+
     const { email, otp } = req.body;
 
     if (!email || !otp) {
-      throw new ApiError(400, "Email and OTP are required");
+        throw new ApiError(400, "Email and OTP are required");
     }
-
+    
     const client = await pool.connect();
 
     try {
