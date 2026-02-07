@@ -13,6 +13,7 @@ import { pool } from "./config/db.js";
 import { authRouter } from "./routes/authRoutes.js";
 import productRouter from "./routes/productRoutes.js";
 import recurringPlanRouter from "./routes/recurringPlan.js";
+import productPlanPricesRouter from "./routes/productPlanPrices.js";
 
 const app = express();
 
@@ -64,6 +65,7 @@ const PORT = process.env.PORT || 3000;
 app.use("/api/auth",authRouter);
 app.use("/api/product",productRouter);
 app.use("/api/recurringPlan",recurringPlanRouter);
+app.use("/api/productPlanPrices",productPlanPricesRouter);
 app.use(errorMiddleware);
 
 app.listen(PORT, () => {
