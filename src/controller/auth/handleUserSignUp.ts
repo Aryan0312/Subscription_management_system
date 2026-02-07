@@ -21,6 +21,10 @@ export const handleUserSignup = asyncHandler(
 
     let { email, password, fname, lname, phone } = req.body;
 
+    //  Required fields check
+    if (!email || !password || !fname || !lname || !phone) {
+      throw new ApiError(400, "All fields are required");
+    }
     //  Sanitize + validate
     email = validateEmail(email);
     fname = trimString(fname);
@@ -29,10 +33,6 @@ export const handleUserSignup = asyncHandler(
     password = validatePassword(password);
 
 
-    //  Required fields check
-    if (!email || !password || !fname || !lname || !phone) {
-      throw new ApiError(400, "All fields are required");
-    }
 
     const client = await pool.connect();
 
