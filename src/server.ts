@@ -59,7 +59,7 @@ app.use(
 const PORT = process.env.PORT || 3000;
 
 
-app.use("/auth",authRouter)
+app.use("/api/auth",authRouter);
 app.use(errorMiddleware);
 
 app.listen(PORT, () => {

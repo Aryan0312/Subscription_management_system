@@ -90,7 +90,7 @@ const SALT_ROUNDS = 12;
         <p>— SakshyaSetu Team</p>
       `;
 
-      await sendMailAsync(
+      sendMailAsync(
         sanitizedEmail,
         "Your Password Has Been Reset",
         emailMessage
