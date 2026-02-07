@@ -27,7 +27,7 @@ attributeRouter.get(
 
 // 3️⃣ Update attribute
 attributeRouter.put(
-  "/:attributeId",
+  "/:id",
   allowedRole(["super_admin", "admin"]),
   updateAttributeWithValues
 );

@@ -6,19 +6,27 @@ import { ApiError } from "../../utils/apiError.js";
 import { trimString } from "../../utils/sanitize.js";
 import { Request, Response } from "express";
 
+/**
+ * Update attribute with values (FULL SYNC)
+ */
 export const updateAttributeWithValues = asyncHandler(
   async (req: Request, res: Response) => {
 
+    // 1️⃣ Required checks
     if (!req.params.id || !req.body.name || !Array.isArray(req.body.values)) {
       throw new ApiError(400, "attribute_id, name and values are required");
     }
 
     const attributeId = Number(req.params.id);
+    if (!attributeId || Number.isNaN(attributeId)) {
+      throw new ApiError(400, "Invalid attribute_id");
+    }
+
     const name = trimString(req.body.name);
     const values = req.body.values;
 
-    if (!attributeId || Number.isNaN(attributeId)) {
-      throw new ApiError(400, "Invalid attribute_id");
+    if (values.length === 0) {
+      throw new ApiError(400, "values cannot be empty");
     }
 
     const client = await pool.connect();
@@ -26,7 +34,7 @@ export const updateAttributeWithValues = asyncHandler(
     try {
       await client.query("BEGIN");
 
-      // 1️⃣ Update attribute
+      // 2️⃣ Update attribute
       const attrResult = await client.query(
         `
         UPDATE attributes
@@ -38,10 +46,10 @@ export const updateAttributeWithValues = asyncHandler(
       );
 
       if (attrResult.rowCount === 0) {
-        throw new ApiError(404, "Attribute not found");
+        throw new ApiError(404, "Attribute not found or inactive");
       }
 
-      // 2️⃣ Existing values
+      // 3️⃣ Fetch existing ACTIVE values
       const existingValuesResult = await client.query(
         `
         SELECT attribute_value_id
@@ -57,9 +65,9 @@ export const updateAttributeWithValues = asyncHandler(
 
       const incomingIds = values
         .filter((v: any) => v.value_id)
-        .map((v: any) => v.value_id);
+        .map((v: any) => Number(v.value_id));
 
-      // 3️⃣ Archive removed values
+      // 4️⃣ Archive removed values
       const toArchive = existingIds.filter(
         id => !incomingIds.includes(id)
       );
@@ -75,30 +83,58 @@ export const updateAttributeWithValues = asyncHandler(
         );
       }
 
-      const finalValues = [];
+      const finalValues: any[] = [];
 
-      // 4️⃣ Update / Insert values
+      // 5️⃣ Update / Insert values
       for (const v of values as any[]) {
+
+        if (!v.value || v.extra_price === undefined) {
+          throw new ApiError(
+            400,
+            "Each value must have value and extra_price"
+          );
+        }
+
         const value = trimString(v.value);
         const extra_price = Number(v.extra_price);
 
+        if (Number.isNaN(extra_price)) {
+          throw new ApiError(400, "extra_price must be a number");
+        }
+
+        // 🔁 UPDATE EXISTING VALUE
         if (v.value_id) {
+
           const updateResult = await client.query(
             `
             UPDATE attribute_values
-            SET value = $1, extra_price = $2, updated_at = NOW()
+            SET value = $1,
+                extra_price = $2,
+                updated_at = NOW()
             WHERE attribute_value_id = $3
+              AND attribute_id = $4
+              AND status = 'ACTIVE'
             RETURNING attribute_value_id, value, extra_price
             `,
-            [value, extra_price, v.value_id]
+            [value, extra_price, v.value_id, attributeId]
           );
+
+          if (updateResult.rowCount === 0) {
+            throw new ApiError(
+              400,
+              `Invalid or inactive attribute value_id: ${v.value_id}`
+            );
+          }
 
           finalValues.push({
             value_id: updateResult.rows[0].attribute_value_id,
             value: updateResult.rows[0].value,
             extra_price: Number(updateResult.rows[0].extra_price)
           });
-        } else {
+
+        } 
+        // ➕ INSERT NEW VALUE
+        else {
           const insertResult = await client.query(
             `
             INSERT INTO attribute_values
@@ -119,6 +155,7 @@ export const updateAttributeWithValues = asyncHandler(
 
       await client.query("COMMIT");
 
+      // 6️⃣ Response
       res.status(200).json({
         data: {
           attribute_id: attrResult.rows[0].attribute_id,
