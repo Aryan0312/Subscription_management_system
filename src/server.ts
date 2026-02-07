@@ -12,6 +12,7 @@ import { morganConfig } from "./config/morgan.js";
 import { pool } from "./config/db.js";
 import { authRouter } from "./routes/authRoutes.js";
 import productRouter from "./routes/productRoutes.js";
+import recurringPlanRouter from "./routes/recurringPlan.js";
 
 const app = express();
 
@@ -62,6 +63,7 @@ const PORT = process.env.PORT || 3000;
 
 app.use("/api/auth",authRouter);
 app.use("/api/product",productRouter);
+app.use("/api/recurringPlan",recurringPlanRouter);
 app.use(errorMiddleware);
 
 app.listen(PORT, () => {

@@ -2,12 +2,12 @@
 -- PostgreSQL database dump
 --
 
-\restrict uz3yarfWcZWLDlO8RrrWjdHrOM1eOqtdZd9UtzjakZWozTB0gFvWBMcbvlfMdNs
+\restrict M9mHdQzNQnG8Inq8KoYQfbVFAqGojRZqS6zQ2rkcBVDa6KwiuLhJsDfQXkgqzz3
 
 -- Dumped from database version 18.1 (Ubuntu 18.1-1.pgdg24.04+2)
 -- Dumped by pg_dump version 18.1 (Ubuntu 18.1-1.pgdg24.04+2)
 
--- Started on 2026-02-07 20:49:32 IST
+-- Started on 2026-02-07 23:06:41 IST
 
 SET statement_timeout = 0;
 SET lock_timeout = 0;
@@ -22,7 +22,7 @@ SET client_min_messages = warning;
 SET row_security = off;
 
 --
--- TOC entry 961 (class 1247 OID 20834)
+-- TOC entry 963 (class 1247 OID 20834)
 -- Name: product_status_enum; Type: TYPE; Schema: public; Owner: postgres
 --
 
@@ -36,7 +36,7 @@ CREATE TYPE public.product_status_enum AS ENUM (
 ALTER TYPE public.product_status_enum OWNER TO postgres;
 
 --
--- TOC entry 958 (class 1247 OID 20826)
+-- TOC entry 960 (class 1247 OID 20826)
 -- Name: product_type_enum; Type: TYPE; Schema: public; Owner: postgres
 --
 
@@ -50,7 +50,7 @@ CREATE TYPE public.product_type_enum AS ENUM (
 ALTER TYPE public.product_type_enum OWNER TO postgres;
 
 --
--- TOC entry 261 (class 1255 OID 20799)
+-- TOC entry 263 (class 1255 OID 20799)
 -- Name: generate_invoice_number(); Type: FUNCTION; Schema: public; Owner: postgres
 --
 
@@ -69,7 +69,7 @@ $$;
 ALTER FUNCTION public.generate_invoice_number() OWNER TO postgres;
 
 --
--- TOC entry 260 (class 1255 OID 20798)
+-- TOC entry 262 (class 1255 OID 20798)
 -- Name: generate_subscription_number(); Type: FUNCTION; Schema: public; Owner: postgres
 --
 
@@ -88,7 +88,7 @@ $$;
 ALTER FUNCTION public.generate_subscription_number() OWNER TO postgres;
 
 --
--- TOC entry 262 (class 1255 OID 20800)
+-- TOC entry 264 (class 1255 OID 20800)
 -- Name: update_invoice_on_payment(); Type: FUNCTION; Schema: public; Owner: postgres
 --
 
@@ -112,7 +112,7 @@ $$;
 ALTER FUNCTION public.update_invoice_on_payment() OWNER TO postgres;
 
 --
--- TOC entry 259 (class 1255 OID 20797)
+-- TOC entry 261 (class 1255 OID 20797)
 -- Name: update_updated_at_column(); Type: FUNCTION; Schema: public; Owner: postgres
 --
 
@@ -364,6 +364,52 @@ ALTER TABLE public.payments ALTER COLUMN payment_id ADD GENERATED ALWAYS AS IDEN
 
 
 --
+-- TOC entry 260 (class 1259 OID 20893)
+-- Name: product_plan_prices; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.product_plan_prices (
+    product_plan_price_id integer NOT NULL,
+    product_id integer NOT NULL,
+    plan_id integer NOT NULL,
+    price numeric(12,2) NOT NULL,
+    min_quantity integer DEFAULT 1,
+    start_date date,
+    end_date date,
+    created_at timestamp without time zone DEFAULT now(),
+    CONSTRAINT chk_min_quantity CHECK ((min_quantity >= 1)),
+    CONSTRAINT chk_price_non_negative CHECK ((price >= (0)::numeric))
+);
+
+
+ALTER TABLE public.product_plan_prices OWNER TO postgres;
+
+--
+-- TOC entry 259 (class 1259 OID 20892)
+-- Name: product_plan_prices_product_plan_price_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+CREATE SEQUENCE public.product_plan_prices_product_plan_price_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER SEQUENCE public.product_plan_prices_product_plan_price_id_seq OWNER TO postgres;
+
+--
+-- TOC entry 3808 (class 0 OID 0)
+-- Dependencies: 259
+-- Name: product_plan_prices_product_plan_price_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+ALTER SEQUENCE public.product_plan_prices_product_plan_price_id_seq OWNED BY public.product_plan_prices.product_plan_price_id;
+
+
+--
 -- TOC entry 233 (class 1259 OID 20431)
 -- Name: product_variants; Type: TABLE; Schema: public; Owner: postgres
 --
@@ -508,7 +554,7 @@ ALTER TABLE public.quotation_templates ALTER COLUMN template_id ADD GENERATED AL
 CREATE TABLE public.recurring_plans (
     plan_id integer NOT NULL,
     name character varying(200) NOT NULL,
-    price numeric(12,2) NOT NULL,
+    price numeric(12,2) DEFAULT NULL::numeric,
     billing_period character varying(20) NOT NULL,
     min_quantity integer DEFAULT 1 NOT NULL,
     start_date date NOT NULL,
@@ -522,12 +568,29 @@ CREATE TABLE public.recurring_plans (
     updated_at timestamp with time zone DEFAULT now() NOT NULL,
     CONSTRAINT recurring_plans_billing_period_check CHECK (((billing_period)::text = ANY ((ARRAY['DAILY'::character varying, 'WEEKLY'::character varying, 'MONTHLY'::character varying, 'YEARLY'::character varying])::text[]))),
     CONSTRAINT recurring_plans_min_quantity_check CHECK ((min_quantity >= 1)),
-    CONSTRAINT recurring_plans_price_check CHECK ((price > (0)::numeric)),
     CONSTRAINT valid_date_range CHECK (((end_date IS NULL) OR (end_date > start_date)))
 );
 
 
 ALTER TABLE public.recurring_plans OWNER TO postgres;
+
+--
+-- TOC entry 3809 (class 0 OID 0)
+-- Dependencies: 235
+-- Name: COLUMN recurring_plans.price; Type: COMMENT; Schema: public; Owner: postgres
+--
+
+COMMENT ON COLUMN public.recurring_plans.price IS 'DEPRECATED: Pricing handled via product_plan_prices.';
+
+
+--
+-- TOC entry 3810 (class 0 OID 0)
+-- Dependencies: 235
+-- Name: COLUMN recurring_plans.min_quantity; Type: COMMENT; Schema: public; Owner: postgres
+--
+
+COMMENT ON COLUMN public.recurring_plans.min_quantity IS 'DEPRECATED: Quantity handled via product_plan_prices.';
+
 
 --
 -- TOC entry 234 (class 1259 OID 20442)
@@ -559,7 +622,7 @@ CREATE TABLE public.roles (
 ALTER TABLE public.roles OWNER TO postgres;
 
 --
--- TOC entry 3789 (class 0 OID 0)
+-- TOC entry 3811 (class 0 OID 0)
 -- Dependencies: 224
 -- Name: TABLE roles; Type: COMMENT; Schema: public; Owner: postgres
 --
@@ -568,7 +631,7 @@ COMMENT ON TABLE public.roles IS 'User roles: super_admin (full system), admin (
 
 
 --
--- TOC entry 3790 (class 0 OID 0)
+-- TOC entry 3812 (class 0 OID 0)
 -- Dependencies: 224
 -- Name: COLUMN roles.name; Type: COMMENT; Schema: public; Owner: postgres
 --
@@ -891,7 +954,15 @@ CREATE VIEW public.v_subscription_details AS
 ALTER VIEW public.v_subscription_details OWNER TO postgres;
 
 --
--- TOC entry 3757 (class 0 OID 20393)
+-- TOC entry 3481 (class 2604 OID 20896)
+-- Name: product_plan_prices product_plan_price_id; Type: DEFAULT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.product_plan_prices ALTER COLUMN product_plan_price_id SET DEFAULT nextval('public.product_plan_prices_product_plan_price_id_seq'::regclass);
+
+
+--
+-- TOC entry 3774 (class 0 OID 20393)
 -- Dependencies: 229
 -- Data for Name: contacts; Type: TABLE DATA; Schema: public; Owner: postgres
 --
@@ -907,7 +978,7 @@ COPY public.contacts (contact_id, user_id, company_name, billing_address, shippi
 
 
 --
--- TOC entry 3767 (class 0 OID 20488)
+-- TOC entry 3784 (class 0 OID 20488)
 -- Dependencies: 239
 -- Data for Name: discounts; Type: TABLE DATA; Schema: public; Owner: postgres
 --
@@ -921,7 +992,7 @@ COPY public.discounts (discount_id, name, type, value, min_purchase, min_quantit
 
 
 --
--- TOC entry 3779 (class 0 OID 20600)
+-- TOC entry 3796 (class 0 OID 20600)
 -- Dependencies: 251
 -- Data for Name: invoice_lines; Type: TABLE DATA; Schema: public; Owner: postgres
 --
@@ -939,7 +1010,7 @@ COPY public.invoice_lines (invoice_line_id, invoice_id, description, quantity, u
 
 
 --
--- TOC entry 3777 (class 0 OID 20570)
+-- TOC entry 3794 (class 0 OID 20570)
 -- Dependencies: 249
 -- Data for Name: invoices; Type: TABLE DATA; Schema: public; Owner: postgres
 --
@@ -955,7 +1026,7 @@ COPY public.invoices (invoice_id, invoice_number, subscription_id, customer_id, 
 
 
 --
--- TOC entry 3783 (class 0 OID 20868)
+-- TOC entry 3800 (class 0 OID 20868)
 -- Dependencies: 258
 -- Data for Name: password_reset_otps; Type: TABLE DATA; Schema: public; Owner: postgres
 --
@@ -966,7 +1037,7 @@ COPY public.password_reset_otps (otp_id, user_id, otp_hash, purpose, expires_at,
 
 
 --
--- TOC entry 3781 (class 0 OID 20616)
+-- TOC entry 3798 (class 0 OID 20616)
 -- Dependencies: 253
 -- Data for Name: payments; Type: TABLE DATA; Schema: public; Owner: postgres
 --
@@ -980,7 +1051,22 @@ COPY public.payments (payment_id, invoice_id, method, amount, payment_date, refe
 
 
 --
--- TOC entry 3761 (class 0 OID 20431)
+-- TOC entry 3802 (class 0 OID 20893)
+-- Dependencies: 260
+-- Data for Name: product_plan_prices; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public.product_plan_prices (product_plan_price_id, product_id, plan_id, price, min_quantity, start_date, end_date, created_at) FROM stdin;
+1	1	1	29.99	1	2024-01-01	\N	2026-02-07 23:04:16.423944
+2	1	2	299.90	1	2024-01-01	\N	2026-02-07 23:04:16.423944
+3	2	3	99.99	1	2024-01-01	\N	2026-02-07 23:04:16.423944
+4	2	4	999.90	1	2024-01-01	\N	2026-02-07 23:04:16.423944
+5	6	1	49.99	1	2024-01-01	\N	2026-02-07 23:04:16.423944
+\.
+
+
+--
+-- TOC entry 3778 (class 0 OID 20431)
 -- Dependencies: 233
 -- Data for Name: product_variants; Type: TABLE DATA; Schema: public; Owner: postgres
 --
@@ -994,7 +1080,7 @@ COPY public.product_variants (variant_id, product_id, attribute_name, attribute_
 
 
 --
--- TOC entry 3759 (class 0 OID 20409)
+-- TOC entry 3776 (class 0 OID 20409)
 -- Dependencies: 231
 -- Data for Name: products; Type: TABLE DATA; Schema: public; Owner: postgres
 --
@@ -1004,13 +1090,14 @@ COPY public.products (product_id, name, type, sales_price, cost_price, is_recurr
 2	SaaS Pro Plan	SERVICE	99.99	15.00	t	ACTIVE	4	2026-02-07 13:44:46.407566+05:30	2026-02-07 13:44:46.407566+05:30
 3	SaaS Enterprise	SERVICE	299.99	50.00	t	ACTIVE	4	2026-02-07 13:44:46.407566+05:30	2026-02-07 13:44:46.407566+05:30
 4	Consulting Hours	SERVICE	150.00	0.00	f	ACTIVE	4	2026-02-07 13:44:46.407566+05:30	2026-02-07 13:44:46.407566+05:30
-5	Setup Fee	SERVICE	500.00	0.00	f	ACTIVE	4	2026-02-07 13:44:46.407566+05:30	2026-02-07 13:44:46.407566+05:30
 6	Premium Support	SERVICE	49.99	10.00	t	ACTIVE	4	2026-02-07 13:44:46.407566+05:30	2026-02-07 13:44:46.407566+05:30
+7	Pro SaaS Plan	DIGITAL	999.00	150.00	t	ACTIVE	4	2026-02-07 21:30:30.046453+05:30	2026-02-07 21:30:30.046453+05:30
+5	Pro SaaS Plan	DIGITAL	999.00	150.00	t	ARCHIVED	4	2026-02-07 13:44:46.407566+05:30	2026-02-07 22:25:24.250164+05:30
 \.
 
 
 --
--- TOC entry 3771 (class 0 OID 20522)
+-- TOC entry 3788 (class 0 OID 20522)
 -- Dependencies: 243
 -- Data for Name: quotation_template_lines; Type: TABLE DATA; Schema: public; Owner: postgres
 --
@@ -1024,7 +1111,7 @@ COPY public.quotation_template_lines (template_line_id, template_id, product_id,
 
 
 --
--- TOC entry 3769 (class 0 OID 20511)
+-- TOC entry 3786 (class 0 OID 20511)
 -- Dependencies: 241
 -- Data for Name: quotation_templates; Type: TABLE DATA; Schema: public; Owner: postgres
 --
@@ -1037,23 +1124,23 @@ COPY public.quotation_templates (template_id, name, validity_days, plan_id, crea
 
 
 --
--- TOC entry 3763 (class 0 OID 20443)
+-- TOC entry 3780 (class 0 OID 20443)
 -- Dependencies: 235
 -- Data for Name: recurring_plans; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
 COPY public.recurring_plans (plan_id, name, price, billing_period, min_quantity, start_date, end_date, is_auto_close, is_closable, is_pausable, is_renewable, created_by, created_at, updated_at) FROM stdin;
-1	Basic Monthly	29.99	MONTHLY	1	2024-01-01	\N	f	t	f	t	4	2026-02-07 13:44:46.407566+05:30	2026-02-07 13:44:46.407566+05:30
-2	Basic Annual	299.90	YEARLY	1	2024-01-01	\N	f	t	f	t	4	2026-02-07 13:44:46.407566+05:30	2026-02-07 13:44:46.407566+05:30
-3	Pro Monthly	99.99	MONTHLY	1	2024-01-01	\N	f	t	t	t	4	2026-02-07 13:44:46.407566+05:30	2026-02-07 13:44:46.407566+05:30
-4	Pro Annual	999.90	YEARLY	1	2024-01-01	\N	f	t	t	t	4	2026-02-07 13:44:46.407566+05:30	2026-02-07 13:44:46.407566+05:30
-5	Enterprise Monthly	299.99	MONTHLY	5	2024-01-01	\N	f	f	f	t	4	2026-02-07 13:44:46.407566+05:30	2026-02-07 13:44:46.407566+05:30
-6	Support Add-on	49.99	MONTHLY	1	2024-01-01	\N	f	t	t	t	4	2026-02-07 13:44:46.407566+05:30	2026-02-07 13:44:46.407566+05:30
+1	Basic Monthly	\N	MONTHLY	1	2024-01-01	\N	f	t	f	t	4	2026-02-07 13:44:46.407566+05:30	2026-02-07 23:04:16.423944+05:30
+2	Basic Annual	\N	YEARLY	1	2024-01-01	\N	f	t	f	t	4	2026-02-07 13:44:46.407566+05:30	2026-02-07 23:04:16.423944+05:30
+3	Pro Monthly	\N	MONTHLY	1	2024-01-01	\N	f	t	t	t	4	2026-02-07 13:44:46.407566+05:30	2026-02-07 23:04:16.423944+05:30
+4	Pro Annual	\N	YEARLY	1	2024-01-01	\N	f	t	t	t	4	2026-02-07 13:44:46.407566+05:30	2026-02-07 23:04:16.423944+05:30
+5	Enterprise Monthly	\N	MONTHLY	1	2024-01-01	\N	f	f	f	t	4	2026-02-07 13:44:46.407566+05:30	2026-02-07 23:04:16.423944+05:30
+6	Support Add-on	\N	MONTHLY	1	2024-01-01	\N	f	t	t	t	4	2026-02-07 13:44:46.407566+05:30	2026-02-07 23:04:16.423944+05:30
 \.
 
 
 --
--- TOC entry 3752 (class 0 OID 17980)
+-- TOC entry 3769 (class 0 OID 17980)
 -- Dependencies: 224
 -- Data for Name: roles; Type: TABLE DATA; Schema: public; Owner: postgres
 --
@@ -1066,18 +1153,19 @@ COPY public.roles (role_id, name, created_at) FROM stdin;
 
 
 --
--- TOC entry 3755 (class 0 OID 18014)
+-- TOC entry 3772 (class 0 OID 18014)
 -- Dependencies: 227
 -- Data for Name: sessions; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
 COPY public.sessions (sid, sess, expire) FROM stdin;
+ZG9SxWebYBa7vIDU_7iFUi7uJLlYIVG_	{"cookie":{"originalMaxAge":14400000,"expires":"2026-02-07T19:56:34.119Z","secure":false,"httpOnly":true,"path":"/","sameSite":"lax"},"user":{"user_id":4,"email":"aryan26zzz@gmail.com","fname":"Aryan","lname":"Shrivastav","role":"super_admin"}}	2026-02-08 02:25:32
 8on5c3RCpFnW6Hb_QgUgiWsQl-JDCdBP	{"cookie":{"originalMaxAge":14400000,"expires":"2026-02-07T13:34:22.684Z","secure":false,"httpOnly":true,"path":"/","sameSite":"lax"},"user":{"user_id":4,"email":"aryan26zzz@gmail.com","fname":"Aryan","lname":"Shrivastav","role":"super_admin"}}	2026-02-07 22:41:26
 \.
 
 
 --
--- TOC entry 3775 (class 0 OID 20557)
+-- TOC entry 3792 (class 0 OID 20557)
 -- Dependencies: 247
 -- Data for Name: subscription_lines; Type: TABLE DATA; Schema: public; Owner: postgres
 --
@@ -1093,7 +1181,7 @@ COPY public.subscription_lines (line_id, subscription_id, product_id, variant_id
 
 
 --
--- TOC entry 3773 (class 0 OID 20534)
+-- TOC entry 3790 (class 0 OID 20534)
 -- Dependencies: 245
 -- Data for Name: subscriptions; Type: TABLE DATA; Schema: public; Owner: postgres
 --
@@ -1108,7 +1196,7 @@ COPY public.subscriptions (subscription_id, subscription_number, customer_id, pl
 
 
 --
--- TOC entry 3765 (class 0 OID 20471)
+-- TOC entry 3782 (class 0 OID 20471)
 -- Dependencies: 237
 -- Data for Name: taxes; Type: TABLE DATA; Schema: public; Owner: postgres
 --
@@ -1122,7 +1210,7 @@ COPY public.taxes (tax_id, name, rate, type, region, is_active, created_by, crea
 
 
 --
--- TOC entry 3750 (class 0 OID 17958)
+-- TOC entry 3767 (class 0 OID 17958)
 -- Dependencies: 222
 -- Data for Name: user_credentials; Type: TABLE DATA; Schema: public; Owner: postgres
 --
@@ -1134,13 +1222,13 @@ COPY public.user_credentials (user_credentials_id, user_id, password, is_locked,
 33	33	$2b$12$UKJJaALT4a0EG/IRbothQO59bAo7XdLEWSzzge.z/l3Pu5HtUA9te	f	0	\N	2026-02-07 13:44:30.497602+05:30
 34	34	$2b$12$UKJJaALT4a0EG/IRbothQO59bAo7XdLEWSzzge.z/l3Pu5HtUA9te	f	0	\N	2026-02-07 13:44:30.497602+05:30
 38	38	$2b$12$NDUDF4pNWB.hitex4I9Axu4HROeOoWH0NmPbeVIO4mbDACi.AdoYS	f	0	2026-02-07 15:03:09.108275+05:30	2026-02-07 14:15:55.942491+05:30
-4	4	$2b$12$UKJJaALT4a0EG/IRbothQO59bAo7XdLEWSzzge.z/l3Pu5HtUA9te	f	0	2026-02-07 18:39:35.896148+05:30	2026-02-05 00:57:11.054677+05:30
 40	40	$2b$12$cToSYxsggjFCiqEH1mOjQeQPYK0a4MXGs6KdoMWOm9zI6wc/l3g4u	f	0	\N	2026-02-07 15:16:05.653428+05:30
+4	4	$2b$12$UKJJaALT4a0EG/IRbothQO59bAo7XdLEWSzzge.z/l3Pu5HtUA9te	f	0	2026-02-07 21:30:27.571439+05:30	2026-02-05 00:57:11.054677+05:30
 \.
 
 
 --
--- TOC entry 3754 (class 0 OID 17992)
+-- TOC entry 3771 (class 0 OID 17992)
 -- Dependencies: 226
 -- Data for Name: user_roles; Type: TABLE DATA; Schema: public; Owner: postgres
 --
@@ -1158,7 +1246,7 @@ COPY public.user_roles (user_role_id, user_id, role_id, created_at) FROM stdin;
 
 
 --
--- TOC entry 3748 (class 0 OID 17942)
+-- TOC entry 3765 (class 0 OID 17942)
 -- Dependencies: 220
 -- Data for Name: users; Type: TABLE DATA; Schema: public; Owner: postgres
 --
@@ -1176,7 +1264,7 @@ COPY public.users (user_id, email, phone, fname, lname, created_at) FROM stdin;
 
 
 --
--- TOC entry 3791 (class 0 OID 0)
+-- TOC entry 3813 (class 0 OID 0)
 -- Dependencies: 228
 -- Name: contacts_contact_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
@@ -1185,7 +1273,7 @@ SELECT pg_catalog.setval('public.contacts_contact_id_seq', 6, true);
 
 
 --
--- TOC entry 3792 (class 0 OID 0)
+-- TOC entry 3814 (class 0 OID 0)
 -- Dependencies: 238
 -- Name: discounts_discount_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
@@ -1194,7 +1282,7 @@ SELECT pg_catalog.setval('public.discounts_discount_id_seq', 4, true);
 
 
 --
--- TOC entry 3793 (class 0 OID 0)
+-- TOC entry 3815 (class 0 OID 0)
 -- Dependencies: 250
 -- Name: invoice_lines_invoice_line_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
@@ -1203,7 +1291,7 @@ SELECT pg_catalog.setval('public.invoice_lines_invoice_line_id_seq', 8, true);
 
 
 --
--- TOC entry 3794 (class 0 OID 0)
+-- TOC entry 3816 (class 0 OID 0)
 -- Dependencies: 248
 -- Name: invoices_invoice_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
@@ -1212,7 +1300,7 @@ SELECT pg_catalog.setval('public.invoices_invoice_id_seq', 6, true);
 
 
 --
--- TOC entry 3795 (class 0 OID 0)
+-- TOC entry 3817 (class 0 OID 0)
 -- Dependencies: 257
 -- Name: password_reset_otps_otp_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
@@ -1221,7 +1309,7 @@ SELECT pg_catalog.setval('public.password_reset_otps_otp_id_seq', 1, true);
 
 
 --
--- TOC entry 3796 (class 0 OID 0)
+-- TOC entry 3818 (class 0 OID 0)
 -- Dependencies: 252
 -- Name: payments_payment_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
@@ -1230,7 +1318,16 @@ SELECT pg_catalog.setval('public.payments_payment_id_seq', 4, true);
 
 
 --
--- TOC entry 3797 (class 0 OID 0)
+-- TOC entry 3819 (class 0 OID 0)
+-- Dependencies: 259
+-- Name: product_plan_prices_product_plan_price_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+--
+
+SELECT pg_catalog.setval('public.product_plan_prices_product_plan_price_id_seq', 5, true);
+
+
+--
+-- TOC entry 3820 (class 0 OID 0)
 -- Dependencies: 232
 -- Name: product_variants_variant_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
@@ -1239,16 +1336,16 @@ SELECT pg_catalog.setval('public.product_variants_variant_id_seq', 4, true);
 
 
 --
--- TOC entry 3798 (class 0 OID 0)
+-- TOC entry 3821 (class 0 OID 0)
 -- Dependencies: 230
 -- Name: products_product_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.products_product_id_seq', 6, true);
+SELECT pg_catalog.setval('public.products_product_id_seq', 7, true);
 
 
 --
--- TOC entry 3799 (class 0 OID 0)
+-- TOC entry 3822 (class 0 OID 0)
 -- Dependencies: 242
 -- Name: quotation_template_lines_template_line_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
@@ -1257,7 +1354,7 @@ SELECT pg_catalog.setval('public.quotation_template_lines_template_line_id_seq',
 
 
 --
--- TOC entry 3800 (class 0 OID 0)
+-- TOC entry 3823 (class 0 OID 0)
 -- Dependencies: 240
 -- Name: quotation_templates_template_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
@@ -1266,7 +1363,7 @@ SELECT pg_catalog.setval('public.quotation_templates_template_id_seq', 3, true);
 
 
 --
--- TOC entry 3801 (class 0 OID 0)
+-- TOC entry 3824 (class 0 OID 0)
 -- Dependencies: 234
 -- Name: recurring_plans_plan_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
@@ -1275,7 +1372,7 @@ SELECT pg_catalog.setval('public.recurring_plans_plan_id_seq', 6, true);
 
 
 --
--- TOC entry 3802 (class 0 OID 0)
+-- TOC entry 3825 (class 0 OID 0)
 -- Dependencies: 223
 -- Name: roles_role_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
@@ -1284,7 +1381,7 @@ SELECT pg_catalog.setval('public.roles_role_id_seq', 3, true);
 
 
 --
--- TOC entry 3803 (class 0 OID 0)
+-- TOC entry 3826 (class 0 OID 0)
 -- Dependencies: 246
 -- Name: subscription_lines_line_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
@@ -1293,7 +1390,7 @@ SELECT pg_catalog.setval('public.subscription_lines_line_id_seq', 6, true);
 
 
 --
--- TOC entry 3804 (class 0 OID 0)
+-- TOC entry 3827 (class 0 OID 0)
 -- Dependencies: 244
 -- Name: subscriptions_subscription_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
@@ -1302,7 +1399,7 @@ SELECT pg_catalog.setval('public.subscriptions_subscription_id_seq', 5, true);
 
 
 --
--- TOC entry 3805 (class 0 OID 0)
+-- TOC entry 3828 (class 0 OID 0)
 -- Dependencies: 236
 -- Name: taxes_tax_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
@@ -1311,7 +1408,7 @@ SELECT pg_catalog.setval('public.taxes_tax_id_seq', 4, true);
 
 
 --
--- TOC entry 3806 (class 0 OID 0)
+-- TOC entry 3829 (class 0 OID 0)
 -- Dependencies: 221
 -- Name: user_credentials_user_credentials_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
@@ -1320,7 +1417,7 @@ SELECT pg_catalog.setval('public.user_credentials_user_credentials_id_seq', 40, 
 
 
 --
--- TOC entry 3807 (class 0 OID 0)
+-- TOC entry 3830 (class 0 OID 0)
 -- Dependencies: 225
 -- Name: user_roles_user_role_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
@@ -1329,7 +1426,7 @@ SELECT pg_catalog.setval('public.user_roles_user_role_id_seq', 16, true);
 
 
 --
--- TOC entry 3808 (class 0 OID 0)
+-- TOC entry 3831 (class 0 OID 0)
 -- Dependencies: 219
 -- Name: users_user_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
@@ -1338,7 +1435,7 @@ SELECT pg_catalog.setval('public.users_user_id_seq', 40, true);
 
 
 --
--- TOC entry 3515 (class 2606 OID 20633)
+-- TOC entry 3525 (class 2606 OID 20633)
 -- Name: contacts contacts_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -1347,7 +1444,7 @@ ALTER TABLE ONLY public.contacts
 
 
 --
--- TOC entry 3531 (class 2606 OID 20643)
+-- TOC entry 3541 (class 2606 OID 20643)
 -- Name: discounts discounts_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -1356,7 +1453,7 @@ ALTER TABLE ONLY public.discounts
 
 
 --
--- TOC entry 3554 (class 2606 OID 20655)
+-- TOC entry 3564 (class 2606 OID 20655)
 -- Name: invoice_lines invoice_lines_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -1365,7 +1462,7 @@ ALTER TABLE ONLY public.invoice_lines
 
 
 --
--- TOC entry 3550 (class 2606 OID 20598)
+-- TOC entry 3560 (class 2606 OID 20598)
 -- Name: invoices invoices_invoice_number_key; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -1374,7 +1471,7 @@ ALTER TABLE ONLY public.invoices
 
 
 --
--- TOC entry 3552 (class 2606 OID 20653)
+-- TOC entry 3562 (class 2606 OID 20653)
 -- Name: invoices invoices_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -1383,7 +1480,7 @@ ALTER TABLE ONLY public.invoices
 
 
 --
--- TOC entry 3559 (class 2606 OID 20886)
+-- TOC entry 3569 (class 2606 OID 20886)
 -- Name: password_reset_otps password_reset_otps_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -1392,7 +1489,7 @@ ALTER TABLE ONLY public.password_reset_otps
 
 
 --
--- TOC entry 3557 (class 2606 OID 20657)
+-- TOC entry 3567 (class 2606 OID 20657)
 -- Name: payments payments_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -1401,7 +1498,16 @@ ALTER TABLE ONLY public.payments
 
 
 --
--- TOC entry 3524 (class 2606 OID 20637)
+-- TOC entry 3574 (class 2606 OID 20906)
+-- Name: product_plan_prices product_plan_prices_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.product_plan_prices
+    ADD CONSTRAINT product_plan_prices_pkey PRIMARY KEY (product_plan_price_id);
+
+
+--
+-- TOC entry 3534 (class 2606 OID 20637)
 -- Name: product_variants product_variants_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -1410,7 +1516,7 @@ ALTER TABLE ONLY public.product_variants
 
 
 --
--- TOC entry 3522 (class 2606 OID 20635)
+-- TOC entry 3532 (class 2606 OID 20635)
 -- Name: products products_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -1419,7 +1525,7 @@ ALTER TABLE ONLY public.products
 
 
 --
--- TOC entry 3536 (class 2606 OID 20647)
+-- TOC entry 3546 (class 2606 OID 20647)
 -- Name: quotation_template_lines quotation_template_lines_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -1428,7 +1534,7 @@ ALTER TABLE ONLY public.quotation_template_lines
 
 
 --
--- TOC entry 3534 (class 2606 OID 20645)
+-- TOC entry 3544 (class 2606 OID 20645)
 -- Name: quotation_templates quotation_templates_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -1437,7 +1543,7 @@ ALTER TABLE ONLY public.quotation_templates
 
 
 --
--- TOC entry 3527 (class 2606 OID 20639)
+-- TOC entry 3537 (class 2606 OID 20639)
 -- Name: recurring_plans recurring_plans_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -1446,7 +1552,7 @@ ALTER TABLE ONLY public.recurring_plans
 
 
 --
--- TOC entry 3504 (class 2606 OID 17990)
+-- TOC entry 3514 (class 2606 OID 17990)
 -- Name: roles roles_name_key; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -1455,7 +1561,7 @@ ALTER TABLE ONLY public.roles
 
 
 --
--- TOC entry 3506 (class 2606 OID 17988)
+-- TOC entry 3516 (class 2606 OID 17988)
 -- Name: roles roles_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -1464,7 +1570,7 @@ ALTER TABLE ONLY public.roles
 
 
 --
--- TOC entry 3513 (class 2606 OID 18023)
+-- TOC entry 3523 (class 2606 OID 18023)
 -- Name: sessions session_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -1473,7 +1579,7 @@ ALTER TABLE ONLY public.sessions
 
 
 --
--- TOC entry 3545 (class 2606 OID 20651)
+-- TOC entry 3555 (class 2606 OID 20651)
 -- Name: subscription_lines subscription_lines_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -1482,7 +1588,7 @@ ALTER TABLE ONLY public.subscription_lines
 
 
 --
--- TOC entry 3541 (class 2606 OID 20649)
+-- TOC entry 3551 (class 2606 OID 20649)
 -- Name: subscriptions subscriptions_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -1491,7 +1597,7 @@ ALTER TABLE ONLY public.subscriptions
 
 
 --
--- TOC entry 3543 (class 2606 OID 20555)
+-- TOC entry 3553 (class 2606 OID 20555)
 -- Name: subscriptions subscriptions_subscription_number_key; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -1500,7 +1606,7 @@ ALTER TABLE ONLY public.subscriptions
 
 
 --
--- TOC entry 3529 (class 2606 OID 20641)
+-- TOC entry 3539 (class 2606 OID 20641)
 -- Name: taxes taxes_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -1509,7 +1615,7 @@ ALTER TABLE ONLY public.taxes
 
 
 --
--- TOC entry 3518 (class 2606 OID 20659)
+-- TOC entry 3528 (class 2606 OID 20659)
 -- Name: contacts unique_user_contact; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -1518,7 +1624,7 @@ ALTER TABLE ONLY public.contacts
 
 
 --
--- TOC entry 3508 (class 2606 OID 18003)
+-- TOC entry 3518 (class 2606 OID 18003)
 -- Name: user_roles unique_user_role; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -1527,7 +1633,7 @@ ALTER TABLE ONLY public.user_roles
 
 
 --
--- TOC entry 3502 (class 2606 OID 17973)
+-- TOC entry 3512 (class 2606 OID 17973)
 -- Name: user_credentials user_credentials_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -1536,7 +1642,7 @@ ALTER TABLE ONLY public.user_credentials
 
 
 --
--- TOC entry 3510 (class 2606 OID 18001)
+-- TOC entry 3520 (class 2606 OID 18001)
 -- Name: user_roles user_roles_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -1545,7 +1651,7 @@ ALTER TABLE ONLY public.user_roles
 
 
 --
--- TOC entry 3496 (class 2606 OID 17954)
+-- TOC entry 3506 (class 2606 OID 17954)
 -- Name: users users_email_key; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -1554,7 +1660,7 @@ ALTER TABLE ONLY public.users
 
 
 --
--- TOC entry 3498 (class 2606 OID 17956)
+-- TOC entry 3508 (class 2606 OID 17956)
 -- Name: users users_phone_key; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -1563,7 +1669,7 @@ ALTER TABLE ONLY public.users
 
 
 --
--- TOC entry 3500 (class 2606 OID 17952)
+-- TOC entry 3510 (class 2606 OID 17952)
 -- Name: users users_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -1572,7 +1678,7 @@ ALTER TABLE ONLY public.users
 
 
 --
--- TOC entry 3511 (class 1259 OID 18024)
+-- TOC entry 3521 (class 1259 OID 18024)
 -- Name: IDX_session_expire; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -1580,7 +1686,7 @@ CREATE INDEX "IDX_session_expire" ON public.sessions USING btree (expire);
 
 
 --
--- TOC entry 3516 (class 1259 OID 20785)
+-- TOC entry 3526 (class 1259 OID 20785)
 -- Name: idx_contacts_customer; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -1588,7 +1694,7 @@ CREATE INDEX idx_contacts_customer ON public.contacts USING btree (is_customer) 
 
 
 --
--- TOC entry 3532 (class 1259 OID 20789)
+-- TOC entry 3542 (class 1259 OID 20789)
 -- Name: idx_discounts_active; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -1596,7 +1702,7 @@ CREATE INDEX idx_discounts_active ON public.discounts USING btree (is_active, st
 
 
 --
--- TOC entry 3546 (class 1259 OID 20794)
+-- TOC entry 3556 (class 1259 OID 20794)
 -- Name: idx_invoices_customer; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -1604,7 +1710,7 @@ CREATE INDEX idx_invoices_customer ON public.invoices USING btree (customer_id);
 
 
 --
--- TOC entry 3547 (class 1259 OID 20795)
+-- TOC entry 3557 (class 1259 OID 20795)
 -- Name: idx_invoices_due_date; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -1612,7 +1718,7 @@ CREATE INDEX idx_invoices_due_date ON public.invoices USING btree (due_date);
 
 
 --
--- TOC entry 3548 (class 1259 OID 20793)
+-- TOC entry 3558 (class 1259 OID 20793)
 -- Name: idx_invoices_status; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -1620,7 +1726,7 @@ CREATE INDEX idx_invoices_status ON public.invoices USING btree (status);
 
 
 --
--- TOC entry 3555 (class 1259 OID 20796)
+-- TOC entry 3565 (class 1259 OID 20796)
 -- Name: idx_payments_invoice; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -1628,7 +1734,7 @@ CREATE INDEX idx_payments_invoice ON public.payments USING btree (invoice_id);
 
 
 --
--- TOC entry 3525 (class 1259 OID 20788)
+-- TOC entry 3535 (class 1259 OID 20788)
 -- Name: idx_plans_dates; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -1636,7 +1742,31 @@ CREATE INDEX idx_plans_dates ON public.recurring_plans USING btree (start_date, 
 
 
 --
--- TOC entry 3519 (class 1259 OID 20787)
+-- TOC entry 3570 (class 1259 OID 20920)
+-- Name: idx_ppp_dates; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX idx_ppp_dates ON public.product_plan_prices USING btree (start_date, end_date);
+
+
+--
+-- TOC entry 3571 (class 1259 OID 20919)
+-- Name: idx_ppp_plan; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX idx_ppp_plan ON public.product_plan_prices USING btree (plan_id);
+
+
+--
+-- TOC entry 3572 (class 1259 OID 20918)
+-- Name: idx_ppp_product; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX idx_ppp_product ON public.product_plan_prices USING btree (product_id);
+
+
+--
+-- TOC entry 3529 (class 1259 OID 20787)
 -- Name: idx_products_recurring; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -1644,7 +1774,7 @@ CREATE INDEX idx_products_recurring ON public.products USING btree (is_recurring
 
 
 --
--- TOC entry 3520 (class 1259 OID 20849)
+-- TOC entry 3530 (class 1259 OID 20849)
 -- Name: idx_products_status; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -1652,7 +1782,7 @@ CREATE INDEX idx_products_status ON public.products USING btree (status);
 
 
 --
--- TOC entry 3537 (class 1259 OID 20791)
+-- TOC entry 3547 (class 1259 OID 20791)
 -- Name: idx_subscriptions_customer; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -1660,7 +1790,7 @@ CREATE INDEX idx_subscriptions_customer ON public.subscriptions USING btree (cus
 
 
 --
--- TOC entry 3538 (class 1259 OID 20792)
+-- TOC entry 3548 (class 1259 OID 20792)
 -- Name: idx_subscriptions_dates; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -1668,7 +1798,7 @@ CREATE INDEX idx_subscriptions_dates ON public.subscriptions USING btree (start_
 
 
 --
--- TOC entry 3539 (class 1259 OID 20790)
+-- TOC entry 3549 (class 1259 OID 20790)
 -- Name: idx_subscriptions_status; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -1676,7 +1806,7 @@ CREATE INDEX idx_subscriptions_status ON public.subscriptions USING btree (statu
 
 
 --
--- TOC entry 3594 (class 2620 OID 20807)
+-- TOC entry 3611 (class 2620 OID 20807)
 -- Name: invoices trigger_generate_invoice_number; Type: TRIGGER; Schema: public; Owner: postgres
 --
 
@@ -1684,7 +1814,7 @@ CREATE TRIGGER trigger_generate_invoice_number BEFORE INSERT ON public.invoices 
 
 
 --
--- TOC entry 3592 (class 2620 OID 20806)
+-- TOC entry 3609 (class 2620 OID 20806)
 -- Name: subscriptions trigger_generate_subscription_number; Type: TRIGGER; Schema: public; Owner: postgres
 --
 
@@ -1692,7 +1822,7 @@ CREATE TRIGGER trigger_generate_subscription_number BEFORE INSERT ON public.subs
 
 
 --
--- TOC entry 3596 (class 2620 OID 20808)
+-- TOC entry 3613 (class 2620 OID 20808)
 -- Name: payments trigger_update_invoice_payment; Type: TRIGGER; Schema: public; Owner: postgres
 --
 
@@ -1700,7 +1830,7 @@ CREATE TRIGGER trigger_update_invoice_payment AFTER INSERT ON public.payments FO
 
 
 --
--- TOC entry 3589 (class 2620 OID 20801)
+-- TOC entry 3606 (class 2620 OID 20801)
 -- Name: contacts update_contacts_updated_at; Type: TRIGGER; Schema: public; Owner: postgres
 --
 
@@ -1708,7 +1838,7 @@ CREATE TRIGGER update_contacts_updated_at BEFORE UPDATE ON public.contacts FOR E
 
 
 --
--- TOC entry 3595 (class 2620 OID 20805)
+-- TOC entry 3612 (class 2620 OID 20805)
 -- Name: invoices update_invoices_updated_at; Type: TRIGGER; Schema: public; Owner: postgres
 --
 
@@ -1716,7 +1846,7 @@ CREATE TRIGGER update_invoices_updated_at BEFORE UPDATE ON public.invoices FOR E
 
 
 --
--- TOC entry 3591 (class 2620 OID 20803)
+-- TOC entry 3608 (class 2620 OID 20803)
 -- Name: recurring_plans update_plans_updated_at; Type: TRIGGER; Schema: public; Owner: postgres
 --
 
@@ -1724,7 +1854,7 @@ CREATE TRIGGER update_plans_updated_at BEFORE UPDATE ON public.recurring_plans F
 
 
 --
--- TOC entry 3590 (class 2620 OID 20802)
+-- TOC entry 3607 (class 2620 OID 20802)
 -- Name: products update_products_updated_at; Type: TRIGGER; Schema: public; Owner: postgres
 --
 
@@ -1732,7 +1862,7 @@ CREATE TRIGGER update_products_updated_at BEFORE UPDATE ON public.products FOR E
 
 
 --
--- TOC entry 3593 (class 2620 OID 20804)
+-- TOC entry 3610 (class 2620 OID 20804)
 -- Name: subscriptions update_subscriptions_updated_at; Type: TRIGGER; Schema: public; Owner: postgres
 --
 
@@ -1740,7 +1870,7 @@ CREATE TRIGGER update_subscriptions_updated_at BEFORE UPDATE ON public.subscript
 
 
 --
--- TOC entry 3563 (class 2606 OID 20660)
+-- TOC entry 3578 (class 2606 OID 20660)
 -- Name: contacts fk_contacts_user; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -1749,7 +1879,7 @@ ALTER TABLE ONLY public.contacts
 
 
 --
--- TOC entry 3568 (class 2606 OID 20685)
+-- TOC entry 3583 (class 2606 OID 20685)
 -- Name: discounts fk_discounts_created_by; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -1758,7 +1888,7 @@ ALTER TABLE ONLY public.discounts
 
 
 --
--- TOC entry 3585 (class 2606 OID 20770)
+-- TOC entry 3600 (class 2606 OID 20770)
 -- Name: invoice_lines fk_invoice_lines_invoice; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -1767,7 +1897,7 @@ ALTER TABLE ONLY public.invoice_lines
 
 
 --
--- TOC entry 3582 (class 2606 OID 20765)
+-- TOC entry 3597 (class 2606 OID 20765)
 -- Name: invoices fk_invoices_created_by; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -1776,7 +1906,7 @@ ALTER TABLE ONLY public.invoices
 
 
 --
--- TOC entry 3583 (class 2606 OID 20760)
+-- TOC entry 3598 (class 2606 OID 20760)
 -- Name: invoices fk_invoices_customer; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -1785,7 +1915,7 @@ ALTER TABLE ONLY public.invoices
 
 
 --
--- TOC entry 3584 (class 2606 OID 20755)
+-- TOC entry 3599 (class 2606 OID 20755)
 -- Name: invoices fk_invoices_subscription; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -1794,7 +1924,7 @@ ALTER TABLE ONLY public.invoices
 
 
 --
--- TOC entry 3577 (class 2606 OID 20750)
+-- TOC entry 3592 (class 2606 OID 20750)
 -- Name: subscription_lines fk_lines_discount; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -1803,7 +1933,7 @@ ALTER TABLE ONLY public.subscription_lines
 
 
 --
--- TOC entry 3578 (class 2606 OID 20735)
+-- TOC entry 3593 (class 2606 OID 20735)
 -- Name: subscription_lines fk_lines_product; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -1812,7 +1942,7 @@ ALTER TABLE ONLY public.subscription_lines
 
 
 --
--- TOC entry 3579 (class 2606 OID 20730)
+-- TOC entry 3594 (class 2606 OID 20730)
 -- Name: subscription_lines fk_lines_subscription; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -1821,7 +1951,7 @@ ALTER TABLE ONLY public.subscription_lines
 
 
 --
--- TOC entry 3580 (class 2606 OID 20745)
+-- TOC entry 3595 (class 2606 OID 20745)
 -- Name: subscription_lines fk_lines_tax; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -1830,7 +1960,7 @@ ALTER TABLE ONLY public.subscription_lines
 
 
 --
--- TOC entry 3581 (class 2606 OID 20740)
+-- TOC entry 3596 (class 2606 OID 20740)
 -- Name: subscription_lines fk_lines_variant; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -1839,7 +1969,7 @@ ALTER TABLE ONLY public.subscription_lines
 
 
 --
--- TOC entry 3588 (class 2606 OID 20887)
+-- TOC entry 3603 (class 2606 OID 20887)
 -- Name: password_reset_otps fk_password_reset_otps_user; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -1848,7 +1978,7 @@ ALTER TABLE ONLY public.password_reset_otps
 
 
 --
--- TOC entry 3586 (class 2606 OID 20775)
+-- TOC entry 3601 (class 2606 OID 20775)
 -- Name: payments fk_payments_invoice; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -1857,7 +1987,7 @@ ALTER TABLE ONLY public.payments
 
 
 --
--- TOC entry 3587 (class 2606 OID 20780)
+-- TOC entry 3602 (class 2606 OID 20780)
 -- Name: payments fk_payments_processed_by; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -1866,7 +1996,7 @@ ALTER TABLE ONLY public.payments
 
 
 --
--- TOC entry 3566 (class 2606 OID 20675)
+-- TOC entry 3581 (class 2606 OID 20675)
 -- Name: recurring_plans fk_plans_created_by; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -1875,7 +2005,25 @@ ALTER TABLE ONLY public.recurring_plans
 
 
 --
--- TOC entry 3564 (class 2606 OID 20665)
+-- TOC entry 3604 (class 2606 OID 20912)
+-- Name: product_plan_prices fk_ppp_plan; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.product_plan_prices
+    ADD CONSTRAINT fk_ppp_plan FOREIGN KEY (plan_id) REFERENCES public.recurring_plans(plan_id);
+
+
+--
+-- TOC entry 3605 (class 2606 OID 20907)
+-- Name: product_plan_prices fk_ppp_product; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.product_plan_prices
+    ADD CONSTRAINT fk_ppp_product FOREIGN KEY (product_id) REFERENCES public.products(product_id);
+
+
+--
+-- TOC entry 3579 (class 2606 OID 20665)
 -- Name: products fk_products_created_by; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -1884,7 +2032,7 @@ ALTER TABLE ONLY public.products
 
 
 --
--- TOC entry 3574 (class 2606 OID 20725)
+-- TOC entry 3589 (class 2606 OID 20725)
 -- Name: subscriptions fk_subscriptions_created_by; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -1893,7 +2041,7 @@ ALTER TABLE ONLY public.subscriptions
 
 
 --
--- TOC entry 3575 (class 2606 OID 20715)
+-- TOC entry 3590 (class 2606 OID 20715)
 -- Name: subscriptions fk_subscriptions_customer; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -1902,7 +2050,7 @@ ALTER TABLE ONLY public.subscriptions
 
 
 --
--- TOC entry 3576 (class 2606 OID 20720)
+-- TOC entry 3591 (class 2606 OID 20720)
 -- Name: subscriptions fk_subscriptions_plan; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -1911,7 +2059,7 @@ ALTER TABLE ONLY public.subscriptions
 
 
 --
--- TOC entry 3567 (class 2606 OID 20680)
+-- TOC entry 3582 (class 2606 OID 20680)
 -- Name: taxes fk_taxes_created_by; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -1920,7 +2068,7 @@ ALTER TABLE ONLY public.taxes
 
 
 --
--- TOC entry 3571 (class 2606 OID 20710)
+-- TOC entry 3586 (class 2606 OID 20710)
 -- Name: quotation_template_lines fk_template_lines_discount; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -1929,7 +2077,7 @@ ALTER TABLE ONLY public.quotation_template_lines
 
 
 --
--- TOC entry 3572 (class 2606 OID 20705)
+-- TOC entry 3587 (class 2606 OID 20705)
 -- Name: quotation_template_lines fk_template_lines_product; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -1938,7 +2086,7 @@ ALTER TABLE ONLY public.quotation_template_lines
 
 
 --
--- TOC entry 3573 (class 2606 OID 20700)
+-- TOC entry 3588 (class 2606 OID 20700)
 -- Name: quotation_template_lines fk_template_lines_template; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -1947,7 +2095,7 @@ ALTER TABLE ONLY public.quotation_template_lines
 
 
 --
--- TOC entry 3569 (class 2606 OID 20695)
+-- TOC entry 3584 (class 2606 OID 20695)
 -- Name: quotation_templates fk_templates_created_by; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -1956,7 +2104,7 @@ ALTER TABLE ONLY public.quotation_templates
 
 
 --
--- TOC entry 3570 (class 2606 OID 20690)
+-- TOC entry 3585 (class 2606 OID 20690)
 -- Name: quotation_templates fk_templates_plan; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -1965,7 +2113,7 @@ ALTER TABLE ONLY public.quotation_templates
 
 
 --
--- TOC entry 3560 (class 2606 OID 17974)
+-- TOC entry 3575 (class 2606 OID 17974)
 -- Name: user_credentials fk_user_credentials_user; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -1974,7 +2122,7 @@ ALTER TABLE ONLY public.user_credentials
 
 
 --
--- TOC entry 3561 (class 2606 OID 18009)
+-- TOC entry 3576 (class 2606 OID 18009)
 -- Name: user_roles fk_user_roles_role; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -1983,7 +2131,7 @@ ALTER TABLE ONLY public.user_roles
 
 
 --
--- TOC entry 3562 (class 2606 OID 18004)
+-- TOC entry 3577 (class 2606 OID 18004)
 -- Name: user_roles fk_user_roles_user; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -1992,7 +2140,7 @@ ALTER TABLE ONLY public.user_roles
 
 
 --
--- TOC entry 3565 (class 2606 OID 20670)
+-- TOC entry 3580 (class 2606 OID 20670)
 -- Name: product_variants fk_variants_product; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -2000,11 +2148,11 @@ ALTER TABLE ONLY public.product_variants
     ADD CONSTRAINT fk_variants_product FOREIGN KEY (product_id) REFERENCES public.products(product_id) ON DELETE CASCADE;
 
 
--- Completed on 2026-02-07 20:49:32 IST
+-- Completed on 2026-02-07 23:06:42 IST
 
 --
 -- PostgreSQL database dump complete
 --
 
-\unrestrict uz3yarfWcZWLDlO8RrrWjdHrOM1eOqtdZd9UtzjakZWozTB0gFvWBMcbvlfMdNs
+\unrestrict M9mHdQzNQnG8Inq8KoYQfbVFAqGojRZqS6zQ2rkcBVDa6KwiuLhJsDfQXkgqzz3
 
