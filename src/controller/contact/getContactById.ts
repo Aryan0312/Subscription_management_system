@@ -23,7 +23,7 @@ export const getContactById = asyncHandler(
       [contactId]
     );
 
-    if (result.rowCount === 0) {
+    if ((result.rowCount ?? 0) === 0) {
       throw new ApiError(404, "Customer not found");
     }
 

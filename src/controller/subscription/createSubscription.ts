@@ -62,6 +62,26 @@ export const createSubscription = asyncHandler(
         throw new ApiError(409, "Subscription number already exists");
       }
 
+      // ✅ Verify customer exists
+      const customerCheck = await client.query(
+        `SELECT 1 FROM contacts WHERE contact_id = $1 AND is_customer = true`,
+        [customerId]
+      );
+
+      if ((customerCheck.rowCount ?? 0) === 0) {
+        throw new ApiError(404, "Customer not found");
+      }
+
+      // ✅ Verify plan exists
+      const planCheck = await client.query(
+        `SELECT 1 FROM recurring_plans WHERE plan_id = $1`,
+        [planId]
+      );
+
+      if ((planCheck.rowCount ?? 0) === 0) {
+        throw new ApiError(404, "Recurring plan not found");
+      }
+
       // ✅ Create subscription (NO discount_id)
       const result = await client.query(
         `
