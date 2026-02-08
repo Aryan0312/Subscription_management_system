@@ -62,29 +62,56 @@ export const createBulkProductVariants = asyncHandler(
           const valueText = trimString(val.value);
           const extraPrice = Number(val.extra_price);
 
-          // 1️⃣ Create attribute_value
-          const valueResult = await client.query(
+          let attributeValueId;
+
+          // 1️⃣ Check if attribute_value already exists
+          const existingValue = await client.query(
             `
-            INSERT INTO attribute_values
-            (attribute_id, value, extra_price, status)
-            VALUES ($1,$2,$3,'ACTIVE')
-            RETURNING attribute_value_id
+            SELECT attribute_value_id
+            FROM attribute_values
+            WHERE attribute_id = $1 AND value = $2 AND status = 'ACTIVE'
             `,
-            [attributeId, valueText, extraPrice]
+            [attributeId, valueText]
           );
 
-          const attributeValueId =
-            valueResult.rows[0].attribute_value_id;
+          if ((existingValue.rowCount ?? 0) > 0) {
+            // Use existing attribute_value_id
+            attributeValueId = existingValue.rows[0].attribute_value_id;
+          } else {
+            // Create new attribute_value
+            const valueResult = await client.query(
+              `
+              INSERT INTO attribute_values
+              (attribute_id, value, extra_price, status)
+              VALUES ($1,$2,$3,'ACTIVE')
+              RETURNING attribute_value_id
+              `,
+              [attributeId, valueText, extraPrice]
+            );
+            attributeValueId = valueResult.rows[0].attribute_value_id;
+          }
 
-          // 2️⃣ Map to product
-          await client.query(
+          // 2️⃣ Check if already linked to product
+          const existingLink = await client.query(
             `
-            INSERT INTO product_attribute_values
-            (product_id, attribute_value_id)
-            VALUES ($1,$2)
+            SELECT 1
+            FROM product_attribute_values
+            WHERE product_id = $1 AND attribute_value_id = $2
             `,
             [productId, attributeValueId]
           );
+
+          if ((existingLink.rowCount ?? 0) === 0) {
+            // Link to product
+            await client.query(
+              `
+              INSERT INTO product_attribute_values
+              (product_id, attribute_value_id)
+              VALUES ($1,$2)
+              `,
+              [productId, attributeValueId]
+            );
+          }
 
           createdVariants.push({
             attribute_id: attributeId,

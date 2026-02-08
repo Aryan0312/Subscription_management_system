@@ -18,6 +18,7 @@ import attributeRouter from "./routes/attributeRoutes.js";
 import taxRouter from "./routes/taxRoutes.js";
 import discountRouter from "./routes/discountRoutes.js";
 import productVariantRouter from "./routes/createBulkVariants.js";
+import subscriptionRouter from "./routes/subsscriptionRoutes.js";
 
 const app = express();
 
@@ -74,6 +75,7 @@ app.use("/api/attributes",attributeRouter);
 app.use("/api/taxes",taxRouter);
 app.use("/api/discounts",discountRouter);
 app.use("/api/productVariants",productVariantRouter);
+app.use("/api/subscriptions",subscriptionRouter);
 app.use(errorMiddleware);
 
 app.listen(PORT, () => {
