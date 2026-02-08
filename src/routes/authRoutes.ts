@@ -12,7 +12,7 @@ export const authRouter = express.Router();
 
 authRouter.post("/login", handleUserLogin);
 authRouter.post("/signup",handleUserSignup);
-authRouter.post("/createUser",allowedRole(["super_admin",]),createUser);
+authRouter.post("/createUser",allowedRole(["super_admin"]),createUser);
 authRouter.post("/forgot/request",handlePasswordResetRequest);
 authRouter.post("/forgot/verify",handlePasswordResetVerifyOtp);
 
