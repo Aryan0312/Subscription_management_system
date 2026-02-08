@@ -2,12 +2,12 @@
 -- PostgreSQL database dump
 --
 
-\restrict VyqkpRZXigohQSI8w74Io2NYkHlFv5nhQCY66cTlO7fFJV2HjgT1zSQudnZtcX1
+\restrict s6B5ydpHSDumfO0gQ127YgOqk4UK3LV7MDtZOXfhXqyC0UlEwueEVJ1TCuVsIG1
 
 -- Dumped from database version 18.1 (Ubuntu 18.1-1.pgdg24.04+2)
 -- Dumped by pg_dump version 18.1 (Ubuntu 18.1-1.pgdg24.04+2)
 
--- Started on 2026-02-08 08:40:05 IST
+-- Started on 2026-02-08 09:57:28 IST
 
 SET statement_timeout = 0;
 SET lock_timeout = 0;
@@ -2359,11 +2359,11 @@ ALTER TABLE ONLY public.user_roles
     ADD CONSTRAINT fk_user_roles_user FOREIGN KEY (user_id) REFERENCES public.users(user_id) ON DELETE CASCADE;
 
 
--- Completed on 2026-02-08 08:40:05 IST
+-- Completed on 2026-02-08 09:57:28 IST
 
 --
 -- PostgreSQL database dump complete
 --
 
-\unrestrict VyqkpRZXigohQSI8w74Io2NYkHlFv5nhQCY66cTlO7fFJV2HjgT1zSQudnZtcX1
+\unrestrict s6B5ydpHSDumfO0gQ127YgOqk4UK3LV7MDtZOXfhXqyC0UlEwueEVJ1TCuVsIG1
 
