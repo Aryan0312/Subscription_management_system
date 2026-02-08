@@ -29,7 +29,7 @@ export const handlePasswordResetRequest = asyncHandler(
 
       
 
-      if (userResult.rowCount) {
+      if (userResult.rowCount ?? 0) {
         const userId = userResult.rows[0].user_id;
         const userEmail = userResult.rows[0].email;
 

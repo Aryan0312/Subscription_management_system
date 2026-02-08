@@ -69,7 +69,7 @@ export const createProductPlanPrice = asyncHandler(
       [product_id]
     );
 
-    if (productCheck.rowCount === 0) {
+    if ((productCheck.rowCount ?? 0) === 0) {
       throw new ApiError(404, "Product not found");
     }
 
@@ -79,7 +79,7 @@ export const createProductPlanPrice = asyncHandler(
       [plan_id]
     );
 
-    if (planCheck.rowCount === 0) {
+    if ((planCheck.rowCount ?? 0) === 0) {
       throw new ApiError(404, "Recurring plan not found");
     }
 

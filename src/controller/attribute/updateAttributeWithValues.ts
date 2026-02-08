@@ -45,7 +45,7 @@ export const updateAttributeWithValues = asyncHandler(
         [name, attributeId]
       );
 
-      if (attrResult.rowCount === 0) {
+      if ((attrResult.rowCount ?? 0) === 0) {
         throw new ApiError(404, "Attribute not found or inactive");
       }
 
@@ -119,7 +119,7 @@ export const updateAttributeWithValues = asyncHandler(
             [value, extra_price, v.value_id, attributeId]
           );
 
-          if (updateResult.rowCount === 0) {
+          if ((updateResult.rowCount ?? 0) === 0) {
             throw new ApiError(
               400,
               `Invalid or inactive attribute value_id: ${v.value_id}`

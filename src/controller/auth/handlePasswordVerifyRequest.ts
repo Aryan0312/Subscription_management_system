@@ -30,7 +30,7 @@ export const handlePasswordResetVerifyOtp = asyncHandler(
         [email]
       );
 
-      if (!userResult.rowCount) {
+      if (!(userResult.rowCount ?? 0)) {
         throw new ApiError(400, "Invalid OTP");
       }
 
@@ -51,7 +51,7 @@ export const handlePasswordResetVerifyOtp = asyncHandler(
         [userId]
       );
 
-      if (!otpResult.rowCount) {
+      if (!(otpResult.rowCount ?? 0)) {
         throw new ApiError(400, "OTP expired or invalid");
       }
 

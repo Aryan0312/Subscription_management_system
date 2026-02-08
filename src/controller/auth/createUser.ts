@@ -74,7 +74,7 @@ export const createUser = asyncHandler(async (req: Request, res: Response) => {
       [email],
     );
 
-    if (emailCheck.rowCount) {
+    if (emailCheck.rowCount ?? 0) {
       throw new ApiError(409, "Email already registered");
     }
 
@@ -84,7 +84,7 @@ export const createUser = asyncHandler(async (req: Request, res: Response) => {
       [phone],
     );
 
-    if (phoneCheck.rowCount) {
+    if (phoneCheck.rowCount ?? 0) {
       throw new ApiError(409, "This phone number is already registered!");
     }
 

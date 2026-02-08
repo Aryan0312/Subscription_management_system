@@ -139,7 +139,7 @@ export const getDiscountById = asyncHandler(
       [discountId]
     );
 
-    if (result.rowCount === 0) {
+    if ((result.rowCount ?? 0) === 0) {
       throw new ApiError(404, "Discount not found");
     }
 
@@ -171,7 +171,7 @@ export const updateDiscount = asyncHandler(
       [discountId]
     );
 
-    if (check.rowCount === 0) {
+    if ((check.rowCount ?? 0) === 0) {
       throw new ApiError(404, "Discount not found");
     }
 
@@ -272,7 +272,7 @@ export const validateDiscount = asyncHandler(
       [discount_id]
     );
 
-    if (result.rowCount === 0) {
+    if ((result.rowCount ?? 0) === 0) {
       return res.json({ valid: false, reason: "Discount inactive or not found" });
     }
 

@@ -78,7 +78,7 @@ export const updateRecurringPlan = asyncHandler(
       [planId]
     );
 
-    if (planCheck.rowCount === 0) {
+    if ((planCheck.rowCount ?? 0) === 0) {
       throw new ApiError(404, "Recurring plan not found");
     }
 

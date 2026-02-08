@@ -71,7 +71,7 @@ export const updateTax = asyncHandler(
       values
     );
 
-    if (result.rowCount === 0) {
+    if ((result.rowCount ?? 0) === 0) {
       throw new ApiError(404, "Tax not found");
     }
 
