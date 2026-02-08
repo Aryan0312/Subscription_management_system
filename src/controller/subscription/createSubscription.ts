@@ -15,11 +15,10 @@ export const createSubscription = asyncHandler(
       customer_id,
       plan_id,
       start_date,
-      payment_terms,
-      discount_id
+      payment_terms
     } = req.body;
 
-    // BODY RULE
+    // ✅ BODY RULE (strict)
     if (
       !subscription_number ||
       !customer_id ||
@@ -31,14 +30,25 @@ export const createSubscription = asyncHandler(
     }
 
     const subNumber = trimString(subscription_number);
+    const customerId = Number(customer_id);
+    const planId = Number(plan_id);
+    const paymentTerms = Number(payment_terms);
     const createdBy = getCreatedBy(req);
+
+    if (
+      Number.isNaN(customerId) ||
+      Number.isNaN(planId) ||
+      Number.isNaN(paymentTerms)
+    ) {
+      throw new ApiError(400, "Invalid numeric values");
+    }
 
     const client = await pool.connect();
 
     try {
       await client.query("BEGIN");
 
-      // 1️⃣ Ensure subscription_number is unique
+      // 🔒 Ensure subscription_number is unique
       const existing = await client.query(
         `
         SELECT 1
@@ -49,13 +59,10 @@ export const createSubscription = asyncHandler(
       );
 
       if ((existing.rowCount ?? 0) > 0) {
-        throw new ApiError(
-          409,
-          "Subscription number already exists"
-        );
+        throw new ApiError(409, "Subscription number already exists");
       }
 
-      // 2️⃣ Create subscription
+      // ✅ Create subscription (NO discount_id)
       const result = await client.query(
         `
         INSERT INTO subscriptions
@@ -65,21 +72,19 @@ export const createSubscription = asyncHandler(
           plan_id,
           start_date,
           payment_terms,
-          discount_id,
           status,
           total_amount,
           created_by
         )
-        VALUES ($1,$2,$3,$4,$5,$6,'DRAFT',0,$7)
+        VALUES ($1,$2,$3,$4,$5,'DRAFT',0,$6)
         RETURNING *
         `,
         [
           subNumber,
-          customer_id,
-          plan_id,
+          customerId,
+          planId,
           start_date,
-          payment_terms,
-          discount_id ?? null,
+          paymentTerms,
           createdBy
         ]
       );
