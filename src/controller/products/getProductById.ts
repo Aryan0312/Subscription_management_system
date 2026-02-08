@@ -69,7 +69,50 @@ export const getProductById = asyncHandler(
       [productId]
     );
 
-    // 5️⃣ Response
+// 5️⃣ Fetch variants/attributes linked to product
+    const variantsResult = await pool.query(
+      `
+      SELECT
+        a.attribute_id,
+        a.name AS attribute_name,
+        av.attribute_value_id,
+        av.value,
+        av.extra_price
+      FROM product_attribute_values pav
+      JOIN attribute_values av
+        ON av.attribute_value_id = pav.attribute_value_id
+        AND av.status = 'ACTIVE'
+      JOIN attributes a
+        ON a.attribute_id = av.attribute_id
+        AND a.status = 'ACTIVE'
+      WHERE pav.product_id = $1
+      ORDER BY a.name ASC, av.value ASC
+      `,
+      [productId]
+    );
+
+    // Group variants by attribute
+    const variantMap = new Map<number, any>();
+    
+    for (const row of variantsResult.rows) {
+      if (!variantMap.has(row.attribute_id)) {
+        variantMap.set(row.attribute_id, {
+          attribute_id: row.attribute_id,
+          attribute_name: row.attribute_name,
+          values: []
+        });
+      }
+      
+      variantMap.get(row.attribute_id).values.push({
+        attribute_value_id: row.attribute_value_id,
+        value: row.value,
+        extra_price: Number(row.extra_price)
+      });
+    }
+    
+    const variants = Array.from(variantMap.values());
+
+    // 6️⃣ Response
     res.status(200).json({
       success: true,
       data: {
@@ -80,7 +123,8 @@ export const getProductById = asyncHandler(
           sales_price: product.sales_price,
           is_recurring: product.is_recurring
         },
-        plans: pricingResult.rows
+        plans: pricingResult.rows,
+        variants: variants
       }
     });
   }
