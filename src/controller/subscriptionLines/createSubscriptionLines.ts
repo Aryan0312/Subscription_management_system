@@ -9,7 +9,7 @@ export const createSubscriptionLine = asyncHandler(
   async (req: Request, res: Response) => {
 
     const subscriptionId = Number(req.params.id);
-    const { product_id, quantity, unit_price, variant_value_ids, tax_ids } = req.body;
+    const { product_id, quantity, unit_price, tax_id, discount_id } = req.body;
 
     if (
       !subscriptionId ||
@@ -20,50 +20,65 @@ export const createSubscriptionLine = asyncHandler(
       throw new ApiError(400, "All required fields are missing");
     }
 
-    const result = await pool.query(
-      `
-      INSERT INTO subscription_lines
-      (subscription_id, product_id, quantity, unit_price)
-      VALUES ($1,$2,$3,$4)
-      RETURNING *
-      `,
-      [subscriptionId, product_id, quantity, unit_price]
-    );
+    const client = await pool.connect();
 
-    const lineId = result.rows[0].subscription_line_id;
+    try {
+      await client.query("BEGIN");
 
-    // Variants
-    if (Array.isArray(variant_value_ids)) {
-      for (const vId of variant_value_ids) {
-        await pool.query(
-          `
-          INSERT INTO subscription_line_variants
-          (subscription_line_id, attribute_value_id)
-          VALUES ($1,$2)
-          `,
-          [lineId, vId]
-        );
+      // Verify subscription exists
+      const subCheck = await client.query(
+        `SELECT 1 FROM subscriptions WHERE subscription_id = $1`,
+        [subscriptionId]
+      );
+
+      if ((subCheck.rowCount ?? 0) === 0) {
+        throw new ApiError(404, "Subscription not found");
       }
-    }
 
-    // Taxes
-    if (Array.isArray(tax_ids)) {
-      for (const taxId of tax_ids) {
-        await pool.query(
-          `
-          INSERT INTO subscription_line_taxes
-          (subscription_line_id, tax_id)
-          VALUES ($1,$2)
-          `,
-          [lineId, taxId]
-        );
+      // Verify product exists
+      const productCheck = await client.query(
+        `SELECT 1 FROM products WHERE product_id = $1`,
+        [product_id]
+      );
+
+      if ((productCheck.rowCount ?? 0) === 0) {
+        throw new ApiError(404, "Product not found");
       }
-    }
 
-    res.status(201).json({
-      success: true,
-      message: "Subscription line added successfully",
-      data: result.rows[0]
-    });
+      // Calculate amount (quantity * unit_price)
+      const amount = quantity * unit_price;
+
+      const result = await client.query(
+        `
+        INSERT INTO subscription_lines
+        (subscription_id, product_id, quantity, unit_price, tax_id, discount_id, amount)
+        VALUES ($1,$2,$3,$4,$5,$6,$7)
+        RETURNING *
+        `,
+        [
+          subscriptionId,
+          product_id,
+          quantity,
+          unit_price,
+          tax_id ?? null,
+          discount_id ?? null,
+          amount
+        ]
+      );
+
+      await client.query("COMMIT");
+
+      res.status(201).json({
+        success: true,
+        message: "Subscription line added successfully",
+        data: result.rows[0]
+      });
+
+    } catch (err) {
+      await client.query("ROLLBACK");
+      throw err;
+    } finally {
+      client.release();
+    }
   }
 );

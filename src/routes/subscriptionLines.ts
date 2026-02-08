@@ -8,22 +8,22 @@ import { deleteSubscriptionLine } from "../controller/subscriptionLines/deleteSu
 export const subscriptionLineRouter = express.Router();
 
 subscriptionLineRouter.post(
-  "/subscriptions/:id/lines",
-  allowedRole(["admin", "super_admin"]),
+  "/:id/lines",
+  allowedRole([
+"admin", "super_admin"]),
   createSubscriptionLine
 );
 
 subscriptionLineRouter.put(
-  "/subscription-lines/:id",
+  "/lines/:id",
   allowedRole(["admin", "super_admin"]),
   updateSubscriptionLine
 );
 
 subscriptionLineRouter.delete(
-  "/subscription-lines/:id",
+  "/lines/:id",
   allowedRole(["admin", "super_admin"]),
   deleteSubscriptionLine
-
 );
 
 export default subscriptionLineRouter;
