@@ -12,16 +12,22 @@ export const getAllContacts = asyncHandler(
     const result = await pool.query(
       `
       SELECT
-        contact_id,
-        company_name,
-        billing_address,
-        shipping_address,
-        tax_id,
-        is_customer,
-        created_at
-      FROM contacts
-      WHERE is_customer = $1
-      ORDER BY created_at DESC
+        c.contact_id,
+        c.company_name,
+        c.billing_address,
+        c.shipping_address,
+        c.tax_id,
+        c.is_customer,
+        c.created_at,
+        u.user_id,
+        u.email,
+        u.fname,
+        u.lname,
+        u.phone
+      FROM contacts c
+      JOIN users u ON c.user_id = u.user_id
+      WHERE c.is_customer = $1
+      ORDER BY c.created_at DESC
       `,
       [isCustomer]
     );
